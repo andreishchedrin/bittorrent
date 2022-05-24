@@ -30,23 +30,23 @@ func (h *Handshake) Serialize() []byte {
 	return buf
 }
 
-func Read(r io.Reader) (*Handshake, error) {
+func (h *Handshake) Read(r io.Reader) error {
 	lengthBuf := make([]byte, 1)
 	_, err := io.ReadFull(r, lengthBuf)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	pstrlen := int(lengthBuf[0])
 
 	if pstrlen == 0 {
 		err := fmt.Errorf("pstrlen cannot be 0")
-		return nil, err
+		return err
 	}
 
 	handshakeBuf := make([]byte, 48+pstrlen)
 	_, err = io.ReadFull(r, handshakeBuf)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var infoHash, peerID [20]byte
@@ -54,11 +54,9 @@ func Read(r io.Reader) (*Handshake, error) {
 	copy(infoHash[:], handshakeBuf[pstrlen+8:pstrlen+8+20])
 	copy(peerID[:], handshakeBuf[pstrlen+8+20:])
 
-	h := Handshake{
-		Pstr:     string(handshakeBuf[0:pstrlen]),
-		InfoHash: infoHash,
-		PeerID:   peerID,
-	}
+	h.Pstr = string(handshakeBuf[0:pstrlen])
+	h.InfoHash = infoHash
+	h.PeerID = peerID
 
-	return &h, nil
+	return nil
 }
