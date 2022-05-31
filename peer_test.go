@@ -37,7 +37,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 }
 
-func TestString(t *testing.T) {
+func TestPeerString(t *testing.T) {
 	tests := []struct {
 		input  Peer
 		output string
