@@ -2,12 +2,15 @@ package bittorrent
 
 import (
 	"bytes"
+	"crypto/rand"
 	"crypto/sha1"
 	"fmt"
 	"github.com/jackpal/bencode-go"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
+	"time"
 )
 
 const Port uint16 = 6881
@@ -110,4 +113,69 @@ func Open(path string) (TorrentFile, error) {
 		return TorrentFile{}, err
 	}
 	return bto.toTorrentFile()
+}
+
+func (t *TorrentFile) DownloadToFile(path string) error {
+	var peerID [20]byte
+	_, err := rand.Read(peerID[:])
+	if err != nil {
+		return err
+	}
+
+	peers, err := t.requestPeers(peerID, Port)
+	if err != nil {
+		return err
+	}
+
+	torrent := Torrent{
+		Peers:       peers,
+		PeerID:      peerID,
+		InfoHash:    t.InfoHash,
+		PieceHashes: t.PieceHashes,
+		PieceLength: t.PieceLength,
+		Length:      t.Length,
+		Name:        t.Name,
+	}
+	buf, err := torrent.Download()
+	if err != nil {
+		return err
+	}
+
+	outFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+	_, err = outFile.Write(buf)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *TorrentFile) requestPeers(peerID [20]byte, port uint16) ([]Peer, error) {
+	Url, err := t.buildTrackerURL(peerID, port)
+	if err != nil {
+		return nil, err
+	}
+
+	c := &http.Client{Timeout: 15 * time.Second}
+	resp, err := c.Get(Url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	trackerResp := bencodeTrackerResp{}
+	err = bencode.Unmarshal(resp.Body, &trackerResp)
+	if err != nil {
+		return nil, err
+	}
+
+	return UnmarshalPeers([]byte(trackerResp.Peers))
+}
+
+type bencodeTrackerResp struct {
+	Interval int    `bencode:"interval"`
+	Peers    string `bencode:"peers"`
 }

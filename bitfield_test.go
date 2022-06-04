@@ -15,44 +15,44 @@ func TestHasPiece(t *testing.T) {
 
 func TestSetPiece(t *testing.T) {
 	tests := []struct {
-		input Bitfield
-		index int
-		outpt Bitfield
+		input  Bitfield
+		index  int
+		output Bitfield
 	}{
 		{
-			input: Bitfield{0b00000000},
-			index: 7,
-			outpt: Bitfield{0b00000001},
+			input:  Bitfield{0b00000000},
+			index:  7,
+			output: Bitfield{0b00000001},
 		},
 		{
-			input: Bitfield{0b00001001},
-			index: 6,
-			outpt: Bitfield{0b00001011},
+			input:  Bitfield{0b00001001},
+			index:  6,
+			output: Bitfield{0b00001011},
 		},
 		{
-			input: Bitfield{0b01010100, 0b01010100},
-			index: 4,
-			outpt: Bitfield{0b01011100, 0b01010100},
+			input:  Bitfield{0b01010100, 0b01010100},
+			index:  4,
+			output: Bitfield{0b01011100, 0b01010100},
 		},
 		{
-			input: Bitfield{0b01010100, 0b01010100},
-			index: 9,
-			outpt: Bitfield{0b01010100, 0b01010100},
+			input:  Bitfield{0b01010100, 0b01010100},
+			index:  9,
+			output: Bitfield{0b01010100, 0b01010100},
 		},
 		{
-			input: Bitfield{0b01010100, 0b01010100},
-			index: 15,
-			outpt: Bitfield{0b01010100, 0b01010101},
+			input:  Bitfield{0b01010100, 0b01010100},
+			index:  15,
+			output: Bitfield{0b01010100, 0b01010101},
 		},
 		{
-			input: Bitfield{0b01010100, 0b01010100},
-			index: 19,
-			outpt: Bitfield{0b01010100, 0b01010100},
+			input:  Bitfield{0b01010100, 0b01010100},
+			index:  19,
+			output: Bitfield{0b01010100, 0b01010100},
 		},
 	}
 	for _, test := range tests {
 		bf := test.input
 		bf.SetPiece(test.index)
-		assert.Equal(t, test.outpt, bf)
+		assert.Equal(t, test.output, bf)
 	}
 }
